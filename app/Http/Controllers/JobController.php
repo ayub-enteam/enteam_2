@@ -16,45 +16,62 @@ class JobController extends Controller
 {
     // job List
     public function jobList()
-    {    
+    {
         $job_list = DB::table('add_jobs')->get();
         $job_count = DB::table('add_jobs')->get()->count();
-        return view('job.joblist',compact('job_list','job_count'));
+        
+        return view('job.joblist', compact('job_list', 'job_count'));
     }
-    
+
     // job view
     public function jobView($id)
-    { 
+    {
         /** update count */
         $post = AddJob::find($id);
-        $update = ['count' =>$post->count + 1,];
-        AddJob::where('id',$post->id)->update($update);
+        $update = ['count' => $post->count + 1,];
+        AddJob::where('id', $post->id)->update($update);
 
-        $job_view = DB::table('add_jobs')->where('id',$id)->get();
-        return view('job.jobview',compact('job_view'));
+        $job_view = DB::table('add_jobs')->where('id', $id)->get();
+        return view('job.jobview', compact('job_view'));
     }
 
     /** users dashboard index */
     public function userDashboard()
     {
         $job_list   = DB::table('add_jobs')->get();
-        return view('job.userdashboard',compact('job_list'));
+        return view('job.userdashboard', compact('job_list'));
     }
 
     /** jobs dashboard index */
-    public function jobsDashboard() {
-        return view('job.jobsdashboard');
+    public function jobsDashboard()
+    {
+        $jobs = DB::table('add_jobs')->count();
+        $jobsdetails = DB::table('add_jobs')->get();
+        $applicantdetails = DB::table('apply_for_jobs')->get(); 
+        $employees = DB::table('users')->where('role_name', 'Employee')->count();
+        $applicant = DB::table('apply_for_jobs')->count();
+        $jobTypes = DB::table('type_jobs')->count();
+        $manageResumes = DB::table('add_jobs')
+            ->join('apply_for_jobs', 'apply_for_jobs.job_title', 'add_jobs.job_title')
+            ->select('add_jobs.*', 'apply_for_jobs.*')->get();
+        return view('job.jobsdashboard', compact('jobs', 'employees', 'applicant','jobTypes','jobsdetails','applicantdetails','manageResumes'));
     }
     /** user all job */
-    public function userDashboardAll() 
+    public function userDashboardAll()
     {
         return view('job.useralljobs');
     }
 
+    public function deleteResume($id)
+    {
+        DB::table('apply_for_jobs')->where('id', $id)->delete();
+        return redirect()->back();
+     }
+
     /** save job */
     public function userDashboardSave()
     {
-      return view('job.savedjobs');
+        return view('job.savedjobs');
     }
 
     /** applied job*/
@@ -93,7 +110,7 @@ class JobController extends Controller
         $department = DB::table('departments')->get();
         $type_job   = DB::table('type_jobs')->get();
         $job_list   = DB::table('add_jobs')->get();
-        return view('job.jobs',compact('department','type_job','job_list'));
+        return view('job.jobs', compact('department', 'type_job', 'job_list'));
     }
 
     /** job save record */
@@ -117,7 +134,7 @@ class JobController extends Controller
 
         DB::beginTransaction();
         try {
-            
+
             $add_job = new AddJob;
             $add_job->job_title       = $request->job_title;
             $add_job->department      = $request->department;
@@ -135,26 +152,26 @@ class JobController extends Controller
             $add_job->save();
 
             DB::commit();
-            Toastr::success('Create add job successfully :)','Success');
+            Toastr::success('Create add job successfully :)', 'Success');
             return redirect()->back();
-            
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add Job fail :)','Error');
+            Toastr::error('Add Job fail :)', 'Error');
             return redirect()->back();
-        } 
+        }
     }
-    
+
     /** job applicants */
     public function jobApplicants($job_title)
     {
-       $apply_for_jobs = DB::table('apply_for_jobs')->where('job_title',$job_title)->get();
-        return view('job.jobapplicants',compact('apply_for_jobs'));
+        $apply_for_jobs = DB::table('apply_for_jobs')->where('job_title', $job_title)->get();
+        return view('job.jobapplicants', compact('apply_for_jobs'));
     }
 
     /** download */
-    public function downloadCV($id) {
-        $cv_uploads = DB::table('apply_for_jobs')->where('id',$id)->first();
+    public function downloadCV($id)
+    {
+        $cv_uploads = DB::table('apply_for_jobs')->where('id', $id)->first();
         $pathToFile = public_path("assets/images/{$cv_uploads->cv_upload}");
         return \Response::download($pathToFile);
     }
@@ -162,12 +179,12 @@ class JobController extends Controller
     /** job details */
     public function jobDetails($id)
     {
-        $job_view_detail = DB::table('add_jobs')->where('id',$id)->get();
-        return view('job.jobdetails',compact('job_view_detail'));
+        $job_view_detail = DB::table('add_jobs')->where('id', $id)->get();
+        return view('job.jobdetails', compact('job_view_detail'));
     }
 
     /** apply Job SaveRecord */
-    public function applyJobSaveRecord(Request $request) 
+    public function applyJobSaveRecord(Request $request)
     {
         $request->validate([
             'job_title' => 'required|string|max:255',
@@ -182,9 +199,9 @@ class JobController extends Controller
         try {
 
             /** upload file */
-            $cv_uploads = time().'.'.$request->cv_upload->extension();  
+            $cv_uploads = time() . '.' . $request->cv_upload->extension();
             $request->cv_upload->move(public_path('assets/images'), $cv_uploads);
-            
+
             $apply_job = new ApplyForJob;
             $apply_job->job_title = $request->job_title;
             $apply_job->name      = $request->name;
@@ -195,14 +212,13 @@ class JobController extends Controller
             $apply_job->save();
 
             DB::commit();
-            Toastr::success('Apply job successfully :)','Success');
+            Toastr::success('Apply job successfully :)', 'Success');
             return redirect()->back();
-            
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Apply Job fail :)','Error');
+            Toastr::error('Apply Job fail :)', 'Error');
             return redirect()->back();
-        } 
+        }
     }
 
     /** applyJobUpdateRecord */
@@ -227,15 +243,15 @@ class JobController extends Controller
                 'description'     => $request->description,
             ];
 
-            AddJob::where('id',$request->id)->update($update);
+            AddJob::where('id', $request->id)->update($update);
             DB::commit();
-            Toastr::success('Updated Leaves successfully :)','Success');
+            Toastr::success('Updated Leaves successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Update Leaves fail :)','Error');
+            Toastr::error('Update Leaves fail :)', 'Error');
             return redirect()->back();
-        } 
+        }
     }
 
     /** manage Resumes */
@@ -244,9 +260,9 @@ class JobController extends Controller
         $department = DB::table('departments')->get();
         $type_job   = DB::table('type_jobs')->get();
         $manageResumes = DB::table('add_jobs')
-                        ->join('apply_for_jobs', 'apply_for_jobs.job_title', 'add_jobs.job_title')
-                        ->select('add_jobs.*', 'apply_for_jobs.*')->get();
-        return view('job.manageresumes',compact('manageResumes','department','type_job'));
+            ->join('apply_for_jobs', 'apply_for_jobs.job_title', 'add_jobs.job_title')
+            ->select('add_jobs.*', 'apply_for_jobs.*')->get();
+        return view('job.manageresumes', compact('manageResumes', 'department', 'type_job'));
     }
 
     /** shortlist candidates */
@@ -262,11 +278,11 @@ class JobController extends Controller
         $category    = DB::table('categories')->get();
         $department  = DB::table('departments')->get();
         $answer      = DB::table('answers')->get();
-        return view('job.interviewquestions',compact('category','department','answer','question'));
+        return view('job.interviewquestions', compact('category', 'department', 'answer', 'question'));
     }
 
     /** interviewQuestions Save */
-    public function categorySave( Request $request)
+    public function categorySave(Request $request)
     {
         $request->validate([
             'category' => 'required|string|max:255',
@@ -278,13 +294,13 @@ class JobController extends Controller
             $save = new Category;
             $save->category = $request->category;
             $save->save();
-            
+
             DB::commit();
-            Toastr::success('Create new Category successfully :)','Success');
+            Toastr::success('Create new Category successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add Category fail :)','Error');
+            Toastr::error('Add Category fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -311,7 +327,7 @@ class JobController extends Controller
         try {
 
             /** upload file */
-            $image_to_questions = time().'.'.$request->image_to_question->extension();  
+            $image_to_questions = time() . '.' . $request->image_to_question->extension();
             $request->image_to_question->move(public_path('assets/images/question'), $image_to_questions);
 
             $save = new Question;
@@ -328,15 +344,15 @@ class JobController extends Controller
             $save->video_link         = $request->video_link;
             $save->image_to_question  = $image_to_questions;
             $save->save();
-            
+
             DB::commit();
-            Toastr::success('Create new Question successfully :)','Success');
+            Toastr::success('Create new Question successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add Question fail :)','Error');
+            Toastr::error('Add Question fail :)', 'Error');
             return redirect()->back();
-        } 
+        }
     }
 
     /** question update */
@@ -344,7 +360,7 @@ class JobController extends Controller
     {
         DB::beginTransaction();
         try {
-            
+
             $update = [
                 'id'            => $request->id,
                 'category'      => $request->category,
@@ -360,13 +376,13 @@ class JobController extends Controller
                 'video_link' => $request->video_link,
             ];
 
-            Question::where('id',$request->id)->update($update);
+            Question::where('id', $request->id)->update($update);
             DB::commit();
-            Toastr::success('Updated Questions successfully :)','Success');
+            Toastr::success('Updated Questions successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Update Questions fail :)','Error');
+            Toastr::error('Update Questions fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -377,12 +393,11 @@ class JobController extends Controller
         try {
 
             Question::destroy($request->id);
-            Toastr::success('Question deleted successfully :)','Success');
+            Toastr::success('Question deleted successfully :)', 'Success');
             return redirect()->back();
-        
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Question delete fail :)','Error');
+            Toastr::error('Question delete fail :)', 'Error');
             return redirect()->back();
         }
     }

@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-
+	
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-	<meta name="description" content="SoengSouy Admin Template">
-	<meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern, accounts, invoice, html5, responsive, CRM, Projects">
-	<meta name="author" content="SoengSouy Admin Template">
+	<!--<meta name="description" content="SoengSouy Admin Template">-->
+	<meta name="keywords" content="admin,employee, estimates, bootstrap, business, corporate, creative, management, minimal, modern, accounts, invoice, html5, responsive, CRM, Projects">
+	<!--<meta name="author" content="SoengSouy Admin Template">-->
 	<meta name="robots" content="noindex, nofollow">
-	<title>Dashboard - HRMS</title>	
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/number-to-words/1.2.4/numberToWords.min.js"></script>
+	<title>Dashboard - HRMS</title>
+
 	<!-- Favicon -->
 	<link rel="shortcut icon" type="image/x-icon" href="{{ URL::to('assets/img/favicon.png') }}">
 	<!-- Bootstrap CSS -->
@@ -25,7 +25,7 @@
 	<!-- Datetimepicker CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/bootstrap-datetimepicker.min.css') }}">
 	<!-- Chart CSS -->
-	<link rel="stylesheet" href="{{ URL::to('ssets/plugins/morris/morris.css') }}">
+	<link rel="stylesheet" href="{{ URL::to('assets/plugins/morris/morris.css') }}">
 	<!-- Main CSS -->
 	<link rel="stylesheet" href="{{ URL::to('assets/css/style.css') }}">
 
@@ -63,9 +63,12 @@
 			<div class="header-left">
 				<a href="{{ route('home') }}" class="logo">
 					<?php
+					use App\Models\Notification;
 					$getuserPhoto = Auth::user()->avatar;
+					$getuserid = Auth::user()->user_id;
 					?>
-					<img src="images/{{$getuserPhoto}}" width="40" height="40" alt="">
+					<img src="{{ asset('images/' . $getuserPhoto) }}" width="40" height="40" alt="">
+					<input type="text" hidden id="gettingid" value="{{$getuserid}}">
 				</a>
 			</div>
 			<!-- /Logo -->
@@ -99,15 +102,10 @@
 				<!-- /Search -->
 
 				<!-- Flag -->
-				<li class="nav-item dropdown has-arrow flag-nav">
-					<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button">
+				<li class="nav-item dropdown flag-nav">
+					<a class="nav-link dropdown-toggle">
 						<img src="{{ URL::to('assets/img/flags/us.png') }}" alt="" height="20"> <span>English</span>
 					</a>
-					<div class="dropdown-menu dropdown-menu-right">
-						<a href="javascript:void(0);" class="dropdown-item">
-							<img src="{{ URL::to('assets/img/flags/us.png') }}" alt="" height="16"> English </a>
-
-					</div>
 				</li>
 				<!-- /Flag -->
 
@@ -115,80 +113,52 @@
 				<li class="nav-item dropdown">
 					<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
 						<i class="fa fa-bell-o"></i>
-						<span class="badge badge-pill">3</span>
+						<span id="totalnotifications" class="badge badge-pill">3</span>
 					</a>
 					<div class="dropdown-menu notifications">
 						<div class="topnav-dropdown-header">
 							<span class="notification-title">Notifications</span>
-							<a href="javascript:void(0)" class="clear-noti"> Clear All </a>
+							<a href="{{ route('clearmynotfications', $getuserid) }}" class="clear-noti"> Clear All </a>
+
 						</div>
 						<div class="noti-content">
 							<ul class="notification-list">
-								<li class="notification-message">
-									<a href="activities.html">
+								<!-- Notifications Li Start -->
+								<script>
+									$(document).ready(function() {
+										var user_id = $('#gettingid').val();
+										var url = "getNotified/" + user_id;
+										$.ajax({
+											url: 'getNotified/' + user_id,
+											method: "GET",
+											dataType: "json",
+
+											success: function(data) {
+												var dataContainer = $(".notification-list");
+												$('#totalnotifications').text(data.length);
+												// For demonstration purposes, let's assume the data is an array of objects
+												for (var i = 0; i < data.length; i++) {
+													var item = data[i];
+													console.log(item.notification_message)
+													var setHTML = `<li class="notification-message">									
 										<div class="media">
-											<span class="avatar">
-												<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-											</span>
-											<div class="media-body">
-												<p class="noti-details"><span class="noti-title">John Doe</span> added new task <span class="noti-title">Patient appointment booking</span></p>
+											<div class="media-body mx-2">
+												<span class="noti-title"></span><span class="noti-title"> ${item.notification_message}</span>
 												<p class="noti-time"><span class="notification-time">4 mins ago</span></p>
 											</div>
 										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="activities.html">
-										<div class="media">
-											<span class="avatar">
-												<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-											</span>
-											<div class="media-body">
-												<p class="noti-details"><span class="noti-title">Tarah Shropshire</span> changed the task name <span class="noti-title">Appointment booking with payment gateway</span></p>
-												<p class="noti-time"><span class="notification-time">6 mins ago</span></p>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="activities.html">
-										<div class="media">
-											<span class="avatar">
-												<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-											</span>
-											<div class="media-body">
-												<p class="noti-details"><span class="noti-title">Misty Tison</span> added <span class="noti-title">Domenic Houston</span> and <span class="noti-title">Claire Mapes</span> to project <span class="noti-title">Doctor available module</span></p>
-												<p class="noti-time"><span class="notification-time">8 mins ago</span></p>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="activities.html">
-										<div class="media">
-											<span class="avatar">
-												<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-											</span>
-											<div class="media-body">
-												<p class="noti-details"><span class="noti-title">Rolland Webber</span> completed task <span class="noti-title">Patient and Doctor video conferencing</span></p>
-												<p class="noti-time"><span class="notification-time">12 mins ago</span></p>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="activities.html">
-										<div class="media">
-											<span class="avatar">
-												<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-											</span>
-											<div class="media-body">
-												<p class="noti-details"><span class="noti-title">Bernardo Galaviz</span> added new task <span class="noti-title">Private chat module</span></p>
-												<p class="noti-time"><span class="notification-time">2 days ago</span></p>
-											</div>
-										</div>
-									</a>
-								</li>
+								</li>`;
+													var itemHtml = "<p>" + item.notification_message + ": " + item.value + "</p>";
+													dataContainer.append(setHTML);
+												}
+											},
+											error: function(jqXHR, textStatus, errorThrown) {
+												console.error("AJAX Error: " + textStatus, errorThrown);
+											}
+										});
+									});
+								</script>
+								<!-- Notifications Li END -->
 							</ul>
 						</div>
 						<div class="topnav-dropdown-footer"> <a href="activities.html">View all Notifications</a> </div>
@@ -196,113 +166,10 @@
 				</li>
 				<!-- /Notifications -->
 
-				<!-- Message Notifications -->
-				<li class="nav-item dropdown">
-					<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
-						<i class="fa fa-comment-o"></i> <span class="badge badge-pill">8</span>
-					</a>
-					<div class="dropdown-menu notifications">
-						<div class="topnav-dropdown-header">
-							<span class="notification-title">Messages</span>
-							<a href="javascript:void(0)" class="clear-noti"> Clear All </a>
-						</div>
-						<div class="noti-content">
-							<ul class="notification-list">
-								<li class="notification-message">
-									<a href="chat.html">
-										<div class="list-item">
-											<div class="list-left">
-												<span class="avatar">
-													<img alt="" src="images/{{$getuserPhoto}}">
-												</span>
-											</div>
-											<div class="list-body">
-												<span class="message-author">Richard Miles </span>
-												<span class="message-time">12:28 AM</span>
-												<div class="clearfix"></div>
-												<span class="message-content">Lorem ipsum dolor sit amet, consectetur adipiscing</span>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="chat.html">
-										<div class="list-item">
-											<div class="list-left">
-												<span class="avatar">
-													<img alt="" src="images/{{$getuserPhoto}}">
-												</span>
-											</div>
-											<div class="list-body">
-												<span class="message-author">John Doe</span>
-												<span class="message-time">6 Mar</span>
-												<div class="clearfix"></div>
-												<span class="message-content">Lorem ipsum dolor sit amet, consectetur adipiscing</span>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="chat.html">
-										<div class="list-item">
-											<div class="list-left">
-												<span class="avatar">
-													<img alt="" src="images/{{$getuserPhoto}}">
-												</span>
-											</div>
-											<div class="list-body">
-												<span class="message-author"> Tarah Shropshire </span>
-												<span class="message-time">5 Mar</span>
-												<div class="clearfix"></div>
-												<span class="message-content">Lorem ipsum dolor sit amet, consectetur adipiscing</span>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="chat.html">
-										<div class="list-item">
-											<div class="list-left">
-												<span class="avatar">
-													<img alt="" src="images/{{$getuserPhoto}}">
-												</span>
-											</div>
-											<div class="list-body">
-												<span class="message-author">Mike Litorus</span>
-												<span class="message-time">3 Mar</span>
-												<div class="clearfix"></div>
-												<span class="message-content">Lorem ipsum dolor sit amet, consectetur adipiscing</span>
-											</div>
-										</div>
-									</a>
-								</li>
-								<li class="notification-message">
-									<a href="chat.html">
-										<div class="list-item">
-											<div class="list-left">
-												<span class="avatar">
-													<img alt="" src="{{ URL::to('/assets/images/'.Auth::user()->avatar) }}">
-												</span>
-											</div>
-											<div class="list-body">
-												<span class="message-author"> Catherine Manseau </span>
-												<span class="message-time">27 Feb</span>
-												<div class="clearfix"></div>
-												<span class="message-content">Lorem ipsum dolor sit amet, consectetur adipiscing</span>
-											</div>
-										</div>
-									</a>
-								</li>
-							</ul>
-						</div>
-						<div class="topnav-dropdown-footer"> <a href="chat.html">View all Messages</a> </div>
-					</div>
-				</li>
-				<!-- /Message Notifications -->
 				<li class="nav-item dropdown has-arrow main-drop">
 					<a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown">
 						<span class="user-img">
-							<img src="images/{{$getuserPhoto}}" alt="{{ Auth::user()->name }}">
+							<img src="{{ asset('images/' . $getuserPhoto) }}">
 							<span class="status online"></span></span>
 						<span>{{ Session::get('name') }}</span>
 					</a>
@@ -365,6 +232,7 @@
 	<!-- Custom JS -->
 	<script src="{{ URL::to('assets/js/app.js') }}"></script>
 	@yield('script')
+
 </body>
 
 </html>

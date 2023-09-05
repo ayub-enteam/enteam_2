@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use DB;
 use Carbon\Carbon;
@@ -42,7 +41,11 @@ class HomeController extends Controller
         $approvedLeaves = DB::table('leaves_admins')->where('leave_status','Approved')->count();
         $employees = DB::table('users')->where('role_name','Employee')->take(5)->get();
         $admins = DB::table('users')->where('role_name','Admin')->take(5)->get();
-        return view('dashboard.dashboard', compact('user', 'admin','task','todayLeaves','totalLeaves','pendingLeaves','declineLeaves','approvedLeaves','employees','admins','leaveList','pendingTask')); // Compact wali line new add ki hai
+        $yesterday = Carbon::yesterday()->format('d-m-Y');
+        $today = Carbon::today()->format('m-d-Y');
+        $department = DB::table('departments')->take(4)->get();
+        $holiday = DB::table('holidays')->take(4)->get();
+        return view('dashboard.dashboard', compact('user', 'admin','task','todayLeaves','totalLeaves','pendingLeaves','declineLeaves','approvedLeaves','employees','admins','leaveList','pendingTask','yesterday','today','department','holiday')); // Compact wali line new add ki hai
     }
     // employee dashboard
     public function emDashboard()
@@ -96,7 +99,46 @@ class HomeController extends Controller
 
         $dt        = Carbon::now();
         $todayDate = $dt->toDayDateTimeString();
-        return view('dashboard.emdashboard', compact('todayDate', 'leaves', 'total','holidays','tasks','taskcompleted','taskpending'));
+
+        $todayTask = DB::table('tasks')->join('users', 'users.name', '=', 'tasks.employee_name')
+        ->where('users.name', $loggedInUserName)
+        ->where('tasks.starting_date',$today)
+        ->select('tasks.*')->get();
+
+        $employeeDetails = [];
+        $loggedInUserName = Auth::user()->name; 
+        $employeeNames = DB::table('tasks')->where('tasks.employee_name',$loggedInUserName)->distinct()->pluck('employee_name');
+        $totalTaskPerformer = count($employeeNames);
+
+        $totalAssignedTasks = DB::table('tasks')->count();
+
+        $completedTasks = DB::table('tasks')->where('status', 'Complete')->count();
+        $totalCompletedAverageTask = $completedTasks / $totalAssignedTasks;
+        foreach ($employeeNames as $employeeName) {
+            $completedTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Complete')
+                ->count();
+
+            $pendingTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Pending')
+                ->count();
+
+            $totalTasksAssigned = $completedTasks + $pendingTasks;
+
+            if ($totalTasksAssigned > 0) {
+                $averageStatus = $completedTasks / $totalTasksAssigned;
+
+                $employeeDetails[] = [
+                    'name' => $employeeName,
+                    'assignedTasks' => $totalTasksAssigned,
+                    'completedTasks' => $completedTasks,
+                    'averageStatus' => $averageStatus,
+                ];
+            }
+        }
+        return view('dashboard.emdashboard', compact('todayDate', 'leaves', 'total','holidays','tasks','taskcompleted','taskpending','todayTask','employeeDetails'));
     }
 
     public function generatePDF(Request $request)
@@ -109,4 +151,5 @@ class HomeController extends Controller
         // download pdf file
         return $pdf->download('pdfview.pdf');
     }
+ 
 }

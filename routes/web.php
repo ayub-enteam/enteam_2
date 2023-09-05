@@ -28,6 +28,9 @@ use App\Http\Controllers\SalesController;
 use App\Http\Controllers\PersonalInformationController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\HealthController;
+use App\Http\Controllers\Notification;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,10 +72,18 @@ Auth::routes();
 // ----------------------------- main dashboard ------------------------------//
 Route::controller(HomeController::class)->group(function () {
     Route::get('/home', 'index')->name('home');
+  
     Route::get('em/dashboard', 'emDashboard')->name('em/dashboard');
 });
 
+/////////////////////NOtifications Contorllers
+Route::controller(NotificationController::class)->group(function () {
+    Route::get('em/getNotified/{user_id}', 'getNotified')->middleware('auth');
+    Route::get('em/clearmynotfications/{user_id}', 'clearmynotfications')->name('clearmynotfications');
+    Route::post('form/feedback/notify/{id}','setfeedbacknotification')->middleware('auth')->name('form/feedback/notify');
+    Route::post('form/PerformanceEmployee/notify/{name}','setPerformancenotification')->middleware('auth')->name('form/PerformanceEmployee/notify/');
 
+});
 
 //--------------Attendance-------//
 Route::controller(AttendanceController::class)->group(function () {
@@ -166,6 +177,8 @@ Route::controller(JobController::class)->group(function () {
     Route::post('form/apply/job/update', 'applyJobUpdateRecord')->name('form/apply/job/update');
 
     Route::get('page/manage/resumes', 'manageResumesIndex')->middleware('auth')->name('page/manage/resumes');
+    Route::post('page/manage/resumes/{id}', 'deleteResume')->middleware('auth')->name('page/manage/resumes/id');
+    
     Route::get('page/shortlist/candidates', 'shortlistCandidatesIndex')->middleware('auth')->name('page/shortlist/candidates');
     Route::get('page/interview/questions', 'interviewQuestionsIndex')->middleware('auth')->name('page/interview/questions'); // view page
     Route::post('save/category', 'categorySave')->name('save/category'); // save record category
@@ -286,7 +299,7 @@ Route::controller(PayrollController::class)->group(function () {
     Route::get('form/payroll/items', 'payrollItems')->middleware('auth')->name('form/payroll/items');    
     Route::post('form/salary/page', 'searchRecord')->name('form/salary/page');
     Route::get('salary/page','salary')->middleware('auth')->name('salary/page');
-   // Route::get('form/salaryview','generatePDF')->middleware('auth')->name('form/salaryview');
+    Route::get('form/salaryview/generate-pdf/{user_id}','generatePDF')->middleware('auth')->name('generate-pdf');
    
 });
 
@@ -311,6 +324,9 @@ Route::controller(PerformanceController::class)->group(function () {
     Route::post('form/performance/appraisal/save', 'saveRecordAppraisal')->middleware('auth')->name('form/performance/appraisal/save');
     Route::post('form/performance/appraisal/update', 'updateAppraisal')->middleware('auth')->name('form/performance/appraisal/update');
     Route::post('form/performance/appraisal/delete', 'deleteAppraisal')->middleware('auth')->name('form/performance/appraisal/delete');
+    //From Usama Side 
+    Route::get('performance','EmployeePerformance')->middleware('auth')->name('performance');
+    Route::get('performance/employee','PerformanceEmployee')->middleware('auth')->name('performance/employee');
 });
 
 // ----------------------------- training  ------------------------------//
@@ -379,6 +395,16 @@ Route::controller(TaskController::class)->group(function(){
 //------------------------------Feedback--------------------//
 Route::controller(FeedbackController::class)->group(function(){
     Route::get('form/feedback/page','index')->middleware('auth')->name('form/feedback/page'); 
-    Route::post('form/feedback/admin','rateemployee')->middleware('auth')->name('form/feedback/admin'); 
+    Route::get('feedback/adminfeedback','adminfeedback')->middleware('auth')->name('adminfeeback'); 
+    Route::post('form/feedback/admin','rateorganization')->middleware('auth')->name('usercompanyfeedback');
+});
 
+Route::controller(HealthController::class)->group(function(){
+    Route::get('Health','index')->middleware('auth')->name('Health');
+    Route::get('deleteactionableemployee/{id}', 'deleteActionableEmployee')->middleware('auth')->name('/deleteactionableemployee');
+    Route::post('add_doctor','adddoctor')->middleware('auth')->name('add_doctor');
+    Route::post('setdoctor_Appointment','setdoctorAppointment')->middleware('auth')->name('setdoctor_Appointment');
+    Route::get('Health2','index2')->middleware('auth')->name('Health2');
+    Route::post('deleteHealthView/{id}/{date}', 'deleteHealthView')->middleware('auth')->name('deleteHealthView');
+    Route::get('HealthEmployee','HealthEmployee')->middleware('auth')->name('HealthEmployee');
 });

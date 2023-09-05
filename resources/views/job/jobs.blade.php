@@ -8,10 +8,10 @@
             <div class="page-header">
                 <div class="row align-items-center">
                     <div class="col">
-                        <h3 class="page-title">Jobs</h3>
+                        <h3 class="page-title">Manage Jobs</h3>
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item active">Jobs</li>
+                            <li class="breadcrumb-item active">Manage Jobs</li>
                         </ul>
                     </div>
                     <div class="col-auto float-right ml-auto">

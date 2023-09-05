@@ -11,8 +11,8 @@ class Feedback extends Model
     protected $fillable = [
         'feedbackfrom',
         'feedbackof',
+        'user_id',
         'feedbackrating',
         'feedbackdescription',
-        
     ];
 }

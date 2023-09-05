@@ -32,6 +32,44 @@ class PayrollController extends Controller
         }
     }
 
+    public function generatePDF($user_id)
+    {
+        $users = DB::table('staff_salaries as ss')
+            ->join('users as u', 'u.user_id', '=', 'ss.user_id')
+            ->select('ss.*', 'u.*')
+            ->where('ss.user_id', $user_id)
+            ->orderBy('ss.name', 'desc') // Specify the table alias 'ss' for 'name'
+            ->first();
+        $data = [
+            'user_id' => $users->user_id,
+            'name' => $users->name,
+            'user_email' => $users->user_email,
+            'department' => $users->department,
+            'basic_salary' => $users->basic_salary,
+            'incentive_pay' => $users->incentive_pay,
+            'conveyance_allowance' => $users->conveyance_allowance,
+            'house_rent_allowance' => $users->house_rent_allowance,
+            'medical_allowance' => $users->medical_allowance,
+            'provident_fund' => $users->provident_fund,
+            'leaves' => $users->leaves,
+            'prof_tax' => $users->prof_tax,
+            'health_insurance' => $users->health_insurance,
+            'email' => $users->email,
+            'join_date' => $users->join_date,
+            'phone_number' => $users->phone_number,
+            'status' => $users->status,
+            'role_name' => $users->role_name,
+            'avatar' => $users->avatar,
+            'position' => $users->position,
+            'title' => 'Welcome to ItSolutionStuff.com',
+            'date' => date('m/d/Y')
+        ];
+
+        $getid = $users->user_id;
+        $pdf = PDF::loadView('payroll.myPDF', $data);
+        return $pdf->stream($getid.'.pdf');
+    }
+
     // save record
     public function saveRecord(Request $request)
     {

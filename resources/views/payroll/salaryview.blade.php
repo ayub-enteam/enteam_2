@@ -1,7 +1,7 @@
 @extends('layouts.master')
 @section('content')
 <!-- Page Wrapper -->
-
+<?php $lastUser = $users->last(); ?>
 <div class="page-wrapper">
     <!-- Page Content -->
     <div class="content container-fluid">
@@ -18,8 +18,13 @@
 
                 <div class="btn-group">
                     <button class="btn btn-white" id="convertToCSV">CSV</button>
-                    <button class="btn btn-white" id="pdfButton">PDF</button>
-                    <button class="btn btn-white" id="printButton"><i class="fa fa-print fa-lg"></i>Print</button>
+                    <a href="{{ url('form/salaryview/generate-pdf/'.$users[0]->user_id) }}">
+                        <button class="btn btn-white" id="pdfButton">PDF</button>
+                    </a>
+                    <a href="{{ url('form/salaryview/generate-pdf/'.$users[0]->user_id) }}">
+                        <button class="btn btn-white" id="printButton"><i class="fa fa-print fa-lg"></i>Print</button>
+                    </a>
+
                 </div>
 
             </div>
@@ -50,7 +55,8 @@
                             <div class="row">
                                 <div class="col-lg-12 m-b-20">
                                     <ul class="list-unstyled">
-                                        @foreach($users as $user)
+                                        @foreach($users->take(1) as $user)
+                                        <span hidden id="useridforajax">{{ $user->user_id }}</span>
                                         <li>
                                             <h5 class="mb-0"><strong>{{ $user->name }}</strong></h5>
                                         </li>
@@ -67,7 +73,7 @@
                                         <h4 class="m-b-10"><strong>Earnings</strong></h4>
                                         <table class="table table-bordered">
                                             <tbody>
-                                                @foreach($users as $user)
+                                                @foreach($users->take(1) as $user)
                                                 <?php
                                                 $a =  (int)$user->basic_salary;
                                                 $b =  (int)$user->incentive_pay;
@@ -104,7 +110,7 @@
                                         <h4 class="m-b-10"><strong>Deductions</strong></h4>
                                         <table class="table table-bordered">
                                             <tbody>
-                                                @foreach($users as $user)
+                                                @foreach($users->take(1) as $user)
                                                 <?php
                                                 $a =  (int)$user->provident_fund;
                                                 $b =  (int)$user->leaves;
@@ -133,7 +139,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-12">
-                                    @foreach($users as $user)
+                                    @foreach($users->take(1) as $user)
                                     <?php
                                     $total = $Total_Earnings - $Total_Deductions;
                                     ?>
@@ -179,66 +185,13 @@
     });
 </script>
 <script>
-    document.getElementById('printButton').addEventListener('click', function() {
-        const printContent = document.getElementById('printContent').innerHTML;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write('<html><head><title>Print</title></head><body>');
-        printWindow.document.write(printContent);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.onload = function() {
-            printWindow.print();
-        };
-    });
+
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-    document.getElementById('pdfButton').addEventListener('click', generatePDF);
 
-    function generatePDF() {
-        const element = document.getElementById('printContent').innerHTML; // Change this selector to target your specific content
-        //console.log(element);
-        const opt = {
-            margin: 10,
-            filename: 'output.pdf',
-            image: {
-                type: 'jpeg',
-                quality: 0.98
-            },
-            html2canvas: {
-                scale: 2
-            },
-            jsPDF: {
-                unit: 'mm',
-                format: 'a4',
-                orientation: 'portrait'
-            }
-        };
 
-        html2pdf().from(element).set(opt).toPdf().outputPdf().then(pdf => {
-            const blob = new Blob([pdf], {
-                type: 'application/pdf'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'output.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
-    }
+
 </script>
-
-
-
-
-
-
-
-
-
 @endsection
 
 @endsection

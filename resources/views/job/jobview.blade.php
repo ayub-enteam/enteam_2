@@ -10,14 +10,14 @@
             <div class="header-left">
                 <a href="{{ route('home') }}" class="logo">
                 <h2 class="mt-3 fw-bold text-primary enLogo">
-    En<span class="text-info">Team</span>
+        En<span class="text-info">Team</span>
 </h2>
                 </a>
             </div>
             <!-- /Logo -->
             <!-- Header Title -->
             <div class="page-title-box float-left">
-                <h3>Soeng Souy</h3>
+                <h3>Apply For Job</h3>
             </div>
             <!-- /Header Title -->
             <!-- Header Menu -->
@@ -40,14 +40,7 @@
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button">
                         <img src="{{ URL::to('assets/img/flags/us.png') }}" alt="" height="20"> <span>English</span>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="{{ URL::to('assets/img/flags/us.png') }}" alt="" height="16"> English
-                        </a>
-                        <a href="javascript:void(0);" class="dropdown-item">
-                            <img src="{{ URL::to('assets/img/flags/kh.png') }}" alt="" height="16"> Khmer 
-                        </a>
-                    </div>
+                    
                 </li>
                 <!-- /Flag -->
                 
@@ -114,17 +107,8 @@
                             <div class="job-description">
                                 <p>{{ $job_view[0]->description }}</p>
                             </div>
-                            <div class="job-desc-title"><h4>Job Description</h4></div>
-                            <div class="job-description">
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
-                                <ul class="square-list">
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                </ul>
-                            </div>
+                            
+                           
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -138,7 +122,7 @@
                             <div class="info-list">
                                 <span><i class="fa fa-money"></i></span>
                                 <h5>Salary</h5>
-                                <p>{{ $job_view[0]->salary_from }}$ - {{ $job_view[0]->salary_to }}$</p>
+                                <p>{{ $job_view[0]->salary_from }} - {{ $job_view[0]->salary_to }}</p>
                             </div>
                             <div class="info-list">
                                 <span><i class="fa fa-suitcase"></i></span>
@@ -154,15 +138,6 @@
                                 <span><i class="fa fa-map-signs"></i></span>
                                 <h5>Location</h5>
                                 <p>{{ $job_view[0]->job_location }}</p>
-                            </div>
-                            <div class="info-list">
-                                <p class="text-truncate"> 096-566-666
-                                <br> <a href="https://www.souysoeng.com" title="soengsouy@example.com">soengsouy@example.com</a>
-                                <br> <a href="https://www.souysoeng.com" target="_blank" title="https://www.souysoeng.com">https://www.souysoeng.com</a>
-                                </p>
-                            </div>
-                            <div class="info-list text-center">
-                                <a class="app-ends" href="#">Application ends in 2d 7h 6m</a>
                             </div>
                         </div>
                     </div>

@@ -224,7 +224,7 @@ class UserManagementController extends Controller
             $todayDate = $dt->toDayDateTimeString();
 
             $image = time().'.'.$request->image->extension();  
-            $request->image->move(public_path('assets/images'), $image);
+            $request->image->move(public_path('images'), $image);
 
             $user = new User;
             $user->name         = $request->name;

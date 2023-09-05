@@ -26,15 +26,49 @@ class PerformanceController extends Controller
         $performance_indicators = DB::table('users')
             ->join('performance_indicators', 'users.user_id', '=', 'performance_indicators.user_id')
             ->select('users.*', 'performance_indicators.*')
-            ->get(); 
-        return view('performance.performanceindicator',compact('indicator','departments','performance_indicators'));
+            ->get();
+        return view('performance.performanceindicator', compact('indicator', 'departments', 'performance_indicators'));
     }
 
     //performance
-    public function performance()
+    public function PerformanceEmployee()
     {
-       
-        return view('performance.performance');
+        $employeeDetails = [];
+        $loggedInUserName = Auth::user()->name; 
+        $employeeNames = DB::table('tasks')->where('tasks.employee_name',$loggedInUserName)->distinct()->pluck('employee_name');
+        $totalTaskPerformer = count($employeeNames);
+
+        $totalAssignedTasks = DB::table('tasks')->count();
+
+        $completedTasks = DB::table('tasks')->where('status', 'Complete')->count();
+        $totalCompletedAverageTask = $completedTasks / $totalAssignedTasks;
+        foreach ($employeeNames as $employeeName) {
+            $completedTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Complete')
+                ->count();
+
+            $pendingTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Pending')
+                ->count();
+
+            $totalTasksAssigned = $completedTasks + $pendingTasks;
+
+            if ($totalTasksAssigned > 0) {
+                $averageStatus = $completedTasks / $totalTasksAssigned;
+
+                $employeeDetails[] = [
+                    'name' => $employeeName,
+                    'assignedTasks' => $totalTasksAssigned,
+                    'completedTasks' => $completedTasks,
+                    'averageStatus' => $averageStatus,
+                ];
+            }
+        }
+
+        return view('performance.performance', compact('employeeDetails', 'totalTaskPerformer', 'totalAssignedTasks', 'totalCompletedAverageTask'));
+        
     }
 
     //performance appraisal view page
@@ -43,10 +77,10 @@ class PerformanceController extends Controller
         $users = DB::table('users')->get();
         $indicator = DB::table('performance_indicator_lists')->get();
         $appraisals = DB::table('users')
-        ->join('performance_appraisals', 'users.user_id', '=', 'performance_appraisals.user_id')
-        ->select('users.*', 'performance_appraisals.*')
-        ->get(); 
-        return view('performance.performanceappraisal',compact('users','indicator','appraisals'));
+            ->join('performance_appraisals', 'users.user_id', '=', 'performance_appraisals.user_id')
+            ->select('users.*', 'performance_appraisals.*')
+            ->get();
+        return view('performance.performanceappraisal', compact('users', 'indicator', 'appraisals'));
     }
 
     // save record
@@ -65,15 +99,15 @@ class PerformanceController extends Controller
             'professionalism'    => 'required|string|max:255',
             'team_work'          => 'required|string|max:255',
             'critical_thinking'  => 'required|string|max:255',
-            'conflict_management'=> 'required|string|max:255',
+            'conflict_management' => 'required|string|max:255',
             'attendance'         => 'required|string|max:255',
-            'ability_to_meet_deadline'=> 'required|string|max:255',
+            'ability_to_meet_deadline' => 'required|string|max:255',
             'status'             => 'required|string|max:255',
         ]);
 
         DB::beginTransaction();
         try {
-            
+
             $indicator = new performanceIndicator;
             $indicator->user_id             = $request->user_id;
             $indicator->designation        = $request->designation;
@@ -88,18 +122,18 @@ class PerformanceController extends Controller
             $indicator->professionalism    = $request->professionalism;
             $indicator->team_work          = $request->team_work;
             $indicator->critical_thinking  = $request->critical_thinking;
-            $indicator->conflict_management= $request->attendance;
+            $indicator->conflict_management = $request->attendance;
             $indicator->attendance         = $request->attendance;
             $indicator->ability_to_meet_deadline = $request->ability_to_meet_deadline;
             $indicator->status             = $request->status;
             $indicator->save();
 
             DB::commit();
-            Toastr::success('Create new performance indicator successfully :)','Success');
+            Toastr::success('Create new performance indicator successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add performance indicator fail :)','Error');
+            Toastr::error('Add performance indicator fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -127,17 +161,17 @@ class PerformanceController extends Controller
                 'conflict_management'       => $request->conflict_management,
                 'attendance'                => $request->attendance,
                 'ability_to_meet_deadline'  => $request->ability_to_meet_deadline,
-                'status'                    => $request->status,               
+                'status'                    => $request->status,
             ];
-            performanceIndicator::where('id',$request->id)->update($update);
+            performanceIndicator::where('id', $request->id)->update($update);
             DB::commit();
-            
+
             DB::commit();
-            Toastr::success('Performance indicator deleted successfully :)','Success');
+            Toastr::success('Performance indicator deleted successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Performance indicator fail :)','Error');
+            Toastr::error('Performance indicator fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -148,13 +182,12 @@ class PerformanceController extends Controller
         try {
 
             performanceIndicator::destroy($request->id);
-            Toastr::success('Performance indicator deleted successfully :)','Success');
+            Toastr::success('Performance indicator deleted successfully :)', 'Success');
             return redirect()->back();
-        
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             DB::rollback();
-            Toastr::error('Performance indicator delete fail :)','Error');
+            Toastr::error('Performance indicator delete fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -164,7 +197,7 @@ class PerformanceController extends Controller
     {
         DB::beginTransaction();
         try {
-            
+
             $appraisal = new performance_appraisal;
             $appraisal->user_id              = $request->user_id;
             $appraisal->date                = $request->date;
@@ -187,28 +220,27 @@ class PerformanceController extends Controller
             $appraisal->save();
 
             DB::commit();
-            Toastr::success('Create new performance appraisal successfully :)','Success');
+            Toastr::success('Create new performance appraisal successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Add performance appraisal fail :)','Error');
+            Toastr::error('Add performance appraisal fail :)', 'Error');
             return redirect()->back();
         }
     }
-    
+
     // delete record
     public function deleteAppraisal(Request $request)
     {
         try {
 
             performance_appraisal::destroy($request->id);
-            Toastr::success('Performance Appraisal deleted successfully :)','Success');
+            Toastr::success('Performance Appraisal deleted successfully :)', 'Success');
             return redirect()->back();
-        
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
 
             DB::rollback();
-            Toastr::error('Performance Appraisal delete fail :)','Error');
+            Toastr::error('Performance Appraisal delete fail :)', 'Error');
             return redirect()->back();
         }
     }
@@ -236,17 +268,54 @@ class PerformanceController extends Controller
                 'conflict_management'       => $request->conflict_management,
                 'attendance'                => $request->attendance,
                 'ability_to_meet_deadline'  => $request->ability_to_meet_deadline,
-                'status'                    => $request->status,               
+                'status'                    => $request->status,
             ];
-            performance_appraisal::where('id',$request->id)->update($update);
+            performance_appraisal::where('id', $request->id)->update($update);
             DB::commit();
-            Toastr::success('Performance Appraisal deleted successfully :)','Success');
+            Toastr::success('Performance Appraisal deleted successfully :)', 'Success');
             return redirect()->back();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
-            Toastr::error('Performance Appraisal fail :)','Error');
+            Toastr::error('Performance Appraisal fail :)', 'Error');
             return redirect()->back();
         }
     }
+    public function EmployeePerformance()
+    {
+        $employeeDetails = [];
 
+        $employeeNames = DB::table('tasks')->distinct()->pluck('employee_name');
+        $totalTaskPerformer = count($employeeNames);
+
+        $totalAssignedTasks = DB::table('tasks')->count();
+
+        $completedTasks = DB::table('tasks')->where('status', 'Complete')->count();
+        $totalCompletedAverageTask = $completedTasks / $totalAssignedTasks;
+        foreach ($employeeNames as $employeeName) {
+            $completedTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Complete')
+                ->count();
+
+            $pendingTasks = DB::table('tasks')
+                ->where('employee_name', $employeeName)
+                ->where('status', 'Pending')
+                ->count();
+
+            $totalTasksAssigned = $completedTasks + $pendingTasks;
+
+            if ($totalTasksAssigned > 0) {
+                $averageStatus = $completedTasks / $totalTasksAssigned;
+
+                $employeeDetails[] = [
+                    'name' => $employeeName,
+                    'assignedTasks' => $totalTasksAssigned,
+                    'completedTasks' => $completedTasks,
+                    'averageStatus' => $averageStatus,
+                ];
+            }
+        }
+
+        return view('performance.performanceemployee', compact('employeeDetails', 'totalTaskPerformer', 'totalAssignedTasks', 'totalCompletedAverageTask'));
+    }
 }
